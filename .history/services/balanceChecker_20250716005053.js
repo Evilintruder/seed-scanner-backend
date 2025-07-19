@@ -25,34 +25,15 @@ const checkBalances = async (addresses, seed) => {
   };
 
   // BTC
-results.BTC = await tryGet([
-  async () => {
-    try {
-      const res = await axios.get(`https://blockchain.info/q/addressbalance/${addresses.BTC}`, {
-        timeout: 3000,
-      });
-      return res.data / 1e8;
-    } catch (err) {
-      throw new Error("blockchain.info failed");
-    }
-  },
-  async () => {
-    try {
-      const res = await axios.get(`https://api.blockcypher.com/v1/btc/main/addrs/${addresses.BTC}/balance`, {
-        params: { token: process.env.BLOCKCYPHER_API_KEY },
-        timeout: 3000,
-      });
-      return res.data.balance / 1e8;
-    } catch (err) {
-      throw new Error("blockcypher failed");
-    }
-  },
-]);
+  results.BTC = await tryGet([
+    async () => (await axios.get(`https://blockchain.info/q/addressbalance/${addresses.BTC}`)).data / 1e8,
+      async () =>
+    (await axios.get(`https://api.blockcypher.com/v1/btc/main/addrs/${addresses.BTC}/balance`, {
+      params: { token: process.env.BLOCKCYPHER_API_KEY },
+    })).data.balance / 1e8,
 
-if (results.BTC === "API_FAILED") {
-  logFail("BTC");
-}
-
+  ]);
+  if (results.BTC === "API_FAILED") logFail("BTC");
 
   // ETH
   results.ETH = await tryGet([
